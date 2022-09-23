@@ -1,0 +1,7 @@
+pip install PyQt5
+pip install pyqtgraph
+pip install plotly
+pip install PyQtWebEngine
+pip install pandas
+pip install matplotlib
+pip install scipy
