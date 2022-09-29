@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 from matplotlib.widgets import LassoSelector
 from matplotlib.path import Path
 
-class Clusterf:
+class Cluster:
     ClusterName = ""
     ClusterData = []
 
