@@ -1,5 +1,5 @@
 import sys
-from PyQt5.QtWidgets import QDialog, QApplication, QPushButton, QVBoxLayout, QLabel, QComboBox, QWidget,QLineEdit
+from PyQt5.QtWidgets import QDialog, QApplication, QPushButton, QVBoxLayout, QFormLayout, QHBoxLayout, QLabel, QComboBox, QWidget,QLineEdit
 from PyQt5.QtGui import QPainter
 from PyQt5.QtCore import QRect
 from scipy.io import mmread
@@ -13,6 +13,8 @@ from matplotlib.path import Path
 class Cluster:
     ClusterName = ""
     ClusterData = []
+    def __str__(self): 
+        return self.ClusterName+": "+ str(self.ClusterData)
 
 metadataDF = pd.read_csv("sc_example_data/metadata.csv")
 pcaDF = pd.read_csv("sc_example_data/pca.csv")
@@ -34,16 +36,17 @@ selectedArray = []
 
 class SelectFromCollection:
 
-    def __init__(self, ax, collection, x, y, w, gene, alpha_other=0.3):
+    def __init__(self, ax, collection, x, y, w, c1Label, c2Label, alpha_other=0.3):
         self.canvas = ax.figure.canvas
         self.collection = collection
         self.alpha_other = alpha_other
         self.x = x
         self.y = y
-        self.gene = gene
         self.xys = collection.get_offsets()
         self.Npts = len(self.xys)
         self.w = w
+        self.c1Label = c1Label
+        self.c2Label = c2Label
 
         # Ensure that we have separate colors for each object
         self.fc = collection.get_facecolors()
@@ -64,9 +67,7 @@ class SelectFromCollection:
         self.canvas.draw_idle()
         for selected in self.xys[self.ind]:
             selectedArray.append(df.loc[(df[self.x] == selected[0]) & (df[self.y] == selected[1])]['Unnamed: 0'].values[0])
-        for barcode in selectedArray:
-            print(self.gene," ",barcode," ",matrixDF.loc[self.gene,barcode])
-        self.w = MyPopup()
+        self.w = MyPopup(self.c1Label, self.c2Label)
         self.w.setGeometry(QRect(100, 100, 400, 200))
         self.w.show()
 
@@ -77,7 +78,7 @@ class SelectFromCollection:
         self.canvas.draw_idle()
 
 class MyPopup(QWidget):
-    def __init__(self):
+    def __init__(self, c1Label, c2Label):
         QWidget.__init__(self)
         self.textbox = QLineEdit(self)
         self.textbox.move(20, 20)
@@ -85,6 +86,8 @@ class MyPopup(QWidget):
         self.textbox.setPlaceholderText("Enter Cluster Name")
         self.button = QPushButton('OK', self)
         self.button.move(20,80)
+        self.c1Label = c1Label
+        self.c2Label = c2Label
         # connect button to function on_click
         self.button.clicked.connect(self.on_click)
         grid = QVBoxLayout()
@@ -92,12 +95,15 @@ class MyPopup(QWidget):
         grid.addWidget(self.button)
 
     def on_click(self):
+        global selectedArray
         if not Cluster1.ClusterName:
             Cluster1.ClusterName = self.textbox.text()
             Cluster1.ClusterData = selectedArray
+            self.c1Label.setText(Cluster1.ClusterName)
         else :
             Cluster2.ClusterName = self.textbox.text()
             Cluster2.ClusterData = selectedArray
+            self.c2Label.setText(Cluster2.ClusterName)
         selectedArray=[]
         self.close()
 
@@ -108,57 +114,72 @@ class Window(QDialog):
         super(Window, self).__init__(parent)
         self.setWindowTitle('Cell Visualization App')
         # self.setFixedSize(QSize(400, 500))
+        # self.setStyleSheet("background-color: White;")
         self.showMaximized()
 
-        
         self.typeComboBox = QComboBox(self)
         self.typeComboBox.addItem("PCA",pcaDF.head())
         self.typeComboBox.addItem("UMAP",umapDF.head())
         self.typeLabel = QLabel("Type:")
         self.typeLabel.setBuddy(self.typeComboBox)
+        self.typeComboBox.resize(165, self.typeComboBox.height());
 
         self.xComboBox = QComboBox(self)
-        self.yComboBox = QComboBox()
         self.xComboBox.addItems(self.typeComboBox.itemData(0))
-        self.yComboBox.addItems(self.typeComboBox.itemData(0))
-        self.typeComboBox.activated.connect(self.clicker)
-
         self.xLabel = QLabel("X:")
         self.xLabel.setBuddy(self.xComboBox)
 
+        self.yComboBox = QComboBox()
+        self.yComboBox.addItems(self.typeComboBox.itemData(0))
         self.yLabel = QLabel("Y:")
         self.yLabel.setBuddy(self.yComboBox)
-
+        self.typeComboBox.activated.connect(self.clicker)
+        
         self.gComboBox = QComboBox()
         self.gComboBox.addItems(features[0])
         self.gLabel = QLabel("Gene:")
         self.gLabel.setBuddy(self.gComboBox)
 
-        self.c1Label = QLabel(Cluster1.ClusterName)
-        self.c2Label = QLabel(Cluster2.ClusterName)
-        # self.button = QPushButton('OK', self)
+        plotButton = QPushButton("Plot Current Attributes", self)
+        plotButton.pressed.connect(self.changeValue)
 
         self.figure = plt.figure()
         self.canvas = FigureCanvas(self.figure)
         self.w = None
 
-        button = QPushButton("Plot Current Attributes", self)
-        button.pressed.connect(self.changeValue)
+        
+        self.c1Label = QLabel(Cluster1.ClusterName)
+        self.c2Label = QLabel(Cluster2.ClusterName)
+        self.c1Label.setStyleSheet("border: 1px solid black;")
+        self.c2Label.setStyleSheet("border: 1px solid black;")
+        self.compareButton = QPushButton("Compare", self)
+        self.compareButton.pressed.connect(self.compare)
+        self.resetButton = QPushButton("Reset", self)
+        self.resetButton.pressed.connect(self.reset)
 
-        grid = QVBoxLayout()
-        grid.addWidget(self.typeLabel)
-        grid.addWidget(self.typeComboBox)
-        grid.addWidget(self.xLabel)
-        grid.addWidget(self.xComboBox)
-        grid.addWidget(self.yLabel)
-        grid.addWidget(self.yComboBox)
-        grid.addWidget(self.gLabel)
-        grid.addWidget(self.gComboBox)
-        grid.addWidget(self.c1Label)
-        grid.addWidget(self.c2Label)
-        grid.addWidget(self.canvas)
-        grid.addWidget(button)
-        self.setLayout(grid)
+        outerLayout = QVBoxLayout()
+        attributeLayout = QFormLayout()
+        comparisonLayout = QHBoxLayout()
+
+        attributeLayout.addRow(self.typeLabel,self.typeComboBox)
+        attributeLayout.addRow(self.xLabel,self.xComboBox)
+        attributeLayout.addRow(self.yLabel,self.yComboBox)
+        attributeLayout.addRow(self.gLabel,self.gComboBox)
+
+        comparisonLayout.addWidget(self.c1Label)
+        comparisonLayout.addWidget(self.c2Label)
+        comparisonLayout.addWidget(self.compareButton)
+        comparisonLayout.addWidget(self.resetButton)
+
+        outerLayout.addLayout(attributeLayout)
+        outerLayout.addWidget(plotButton)
+        outerLayout.addWidget(self.canvas)
+        outerLayout.addLayout(comparisonLayout)
+
+        # layout.setContentsMargins(left, top, right, bottom)
+        outerLayout.setContentsMargins(50, 20, 50, 50)
+        self.setLayout(outerLayout)
+
 
     def clicker(self, index):
         self.xComboBox.clear()
@@ -166,26 +187,54 @@ class Window(QDialog):
         self.xComboBox.addItems(self.typeComboBox.itemData(index))
         self.yComboBox.addItems(self.typeComboBox.itemData(index))
 
+    def reset(self, *args):
+        Cluster1.ClusterName = ""
+        Cluster1.ClusterData = []
+        Cluster2.ClusterName = ""
+        Cluster2.ClusterData = []
+        self.c1Label.setText("")
+        self.c2Label.setText("")
+        self.changeValue()
+
+    def compare(self, *args):
+        gene = self.gComboBox.currentText()
+        self.figure.clear() #clear current figure
+        ax = self.figure.add_subplot(121) # create an axis
+        c1matrix = []
+        c2matrix = []
+        for barcode in Cluster1.ClusterData:
+            c1matrix.append(matrixDF.loc[gene,barcode])
+            print(Cluster1.ClusterName,": ",gene," ",barcode," ",matrixDF.loc[gene,barcode])
+        ax.hist(c1matrix)
+        ax = self.figure.add_subplot(122) # create an axis
+        for barcode in Cluster2.ClusterData:
+            c2matrix.append(matrixDF.loc[gene,barcode])
+            print(Cluster2.ClusterName,": ",gene," ",barcode," ",matrixDF.loc[gene,barcode])
+        ax.hist(c2matrix)
+        self.canvas.draw()
+
+
     def changeValue(self, *args):
+
+        Cluster1.ClusterName = ""
+        Cluster1.ClusterData = []
+        Cluster2.ClusterName = ""
+        Cluster2.ClusterData = []
+        self.c1Label.setText("")
+        self.c2Label.setText("")
+        
         # finding the content of current item in combo box
         plttype = self.typeComboBox.currentText()
         x = self.xComboBox.currentText()
         y = self.yComboBox.currentText()
-        gene = self.gComboBox.currentText()
-
-        #clear current figure
-        self.figure.clear()
-
-        # create an axis
-        ax = self.figure.add_subplot(111)
-
-        #create scatter plot with new data
-        b = ax.scatter(x=df[x], y=df[y], s = 4)
+        self.figure.clear() #clear current figure
+        ax = self.figure.add_subplot(111) # create an axis
+        b = ax.scatter(x=df[x], y=df[y], s = 4) #create scatter plot with new data
 
         #create labels and title
         t = y + " vs " + x
         ax.set(xlabel=x, ylabel =y, title=t )
-        selector = SelectFromCollection(ax, b, x, y, self.w, gene)
+        selector = SelectFromCollection(ax, b, x, y, self.w, self.c1Label, self.c2Label)
 
         #draw new graph
         self.canvas.draw()
