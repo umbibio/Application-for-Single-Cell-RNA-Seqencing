@@ -2,6 +2,7 @@ import scanpy as sc
 from matplotlib.widgets import LassoSelector
 from matplotlib.path import Path
 import numpy as np
+import pandas as pd
 
 class Cluster:
     ClusterName = ""
@@ -65,3 +66,12 @@ def preprocessAnnData(adata):
 #         self.canvas.draw_idle()
 
 
+def createXlsx(adata):
+    grouplen = len(adata.obs['leiden'].value_counts())
+    df = pd.DataFrame()
+    for group in range(grouplen):
+        if df.empty:
+            df = sc.get.rank_genes_groups_df(adata, group=str(group), key='wilcoxon')
+        else:
+            df.append(sc.get.rank_genes_groups_df(adata, group=str(group), key='wilcoxon'))
+    df.to_excel('Differential Gene Expression Information.xlsx', index=False)

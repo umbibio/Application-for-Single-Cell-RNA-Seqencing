@@ -1,46 +1,41 @@
 import MainWindowFunctions as mwf
 import VisualizationPopup as vp
-import sys
-from PyQt5.QtWidgets import QDialog, QApplication, QPushButton, QVBoxLayout, QFormLayout, QHBoxLayout, QLabel, QComboBox, QWidget,QLineEdit
+from PyQt5.QtWidgets import QDialog, QPushButton, QVBoxLayout, QFormLayout, QHBoxLayout, QLabel, QComboBox
 from PyQt5.QtCore import QRect
 import pandas as pd
 import numpy as np
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 import matplotlib.pyplot as plt
 import scanpy as sc
-import os
+import anndata as anndata
 
-if os.path.isfile('./PreprocessedData/adata.h5ad'):
-    adata = sc.read('./PreprocessedData/adata.h5ad') 
-    adata.uns['log1p']["base"] = None
-else:
-    adata = sc.read_10x_mtx(
-        'sc_example_data/aggr_iHPF_pHPF_N1_SFT/outs/filtered_feature_bc_matrix/',  # the directory with the `.mtx` file
-        var_names='gene_symbols',                # use gene symbols for the variable names (variables-axis index)
-        cache=False) 
-    adata = mwf.preprocessAnnData(adata)
-
-genes = pd.DataFrame(adata.var.gene_ids)
-gene_ids = genes['gene_ids'].to_numpy()
 AutoClustering = False
 Cluster1 = mwf.Cluster()
 Cluster2 = mwf.Cluster()
+gene_ids= []
+genes = pd.DataFrame()
+adata = anndata.AnnData(
+  X = None,
+  obs = None,
+  var = None)
 
 class Window(QDialog):
 
     # constructor
-    def __init__(self, parent=None):
-        super(Window, self).__init__(parent)
-        self.setWindowTitle('Cell Visualization App')
-        # self.setFixedSize(QSize(400, 500))
-        # self.setStyleSheet("background-color: White;")
+    def __init__(self, adataFetched):
+        super(Window, self).__init__()
+        self.setWindowTitle('Single cell RNA-Seq')
         self.showMaximized()
 
+        global adata, genes, gene_ids
+        adata = adataFetched
+        genes = pd.DataFrame(adata.var.gene_ids)
+        gene_ids = genes['gene_ids'].to_numpy()
         self.typeComboBox = QComboBox(self)
         self.typeComboBox.addItems(['PCA', 'UMAP'])
         self.typeLabel = QLabel("Type:")
         self.typeLabel.setBuddy(self.typeComboBox)
-        self.typeComboBox.resize(165, self.typeComboBox.height());
+        self.typeComboBox.resize(165, self.typeComboBox.height())
         
         self.gComboBox = QComboBox()
         self.gComboBox.addItems(gene_ids)
@@ -94,7 +89,7 @@ class Window(QDialog):
         self.outerLayout.addWidget(self.plotButton )
         
         # self.outerLayout.addLayout(self.plotSelectionLayout)
-        self.outerLayout.addWidget(self.canvas)
+        # self.outerLayout.addWidget(self.canvas)
         # self.outerLayout.addLayout(self.comparisonLayout)
         
 
@@ -156,14 +151,14 @@ class Window(QDialog):
 
     def calcDiffGene(self, *args):
         sc.tl.rank_genes_groups(adata, groupby='leiden', method='wilcoxon', key_added='wilcoxon')
-        self.visualizationWindow = vp.visualizationPopup(adata, AutoClustering)
-        self.visualizationWindow.setGeometry(QRect(100, 100, 400, 200))
+        mwf.createXlsx(adata)
+        sc.pl.rank_genes_groups(adata, n_genes=25, sharey=False, key='wilcoxon', show=False, save='.png')
+        sc.pl.rank_genes_groups_dotplot(adata, n_genes=5, key='wilcoxon', groupby='leiden', dendrogram = False, show=False, save='.png')
+        sc.pl.rank_genes_groups_violin(adata, n_genes=5, key='wilcoxon', show=False, save='.png')
+        sc.pl.rank_genes_groups_stacked_violin(adata, n_genes=5, key='wilcoxon', groupby='leiden', show=False, save='.png', dendrogram = False)
+        sc.pl.rank_genes_groups_matrixplot(adata, n_genes=5, key='wilcoxon', groupby='leiden', show=False, save='.png', dendrogram = False)
+        sc.pl.rank_genes_groups_heatmap(adata, n_genes=5, key='wilcoxon', groupby='leiden', show_gene_labels = True, show=False, save='.png', dendrogram = False)
+        sc.pl.rank_genes_groups_tracksplot(adata, n_genes=5, key='wilcoxon', groupby='leiden', show=False, save='.png', dendrogram= False)
+        self.visualizationWindow = vp.visualizationPopup()
+        # self.visualizationWindow.setGeometry(QRect(100, 100, 1000, 800))
         self.visualizationWindow.show()
-
-
-if __name__ == '__main__':
-    # creating apyqt5 application
-    app = QApplication(sys.argv)
-    main = Window()
-    main.show()
-    sys.exit(app.exec_())
