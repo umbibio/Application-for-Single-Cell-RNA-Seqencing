@@ -22,52 +22,7 @@ def preprocessAnnData(adata):
     return adata
 
 
-# class SelectFromCollection:
-
-#     def __init__(self, ax, compareWindow, c1Label, c2Label, alpha_other=0.3):
-#         self.canvas = ax.figure.canvas
-#         # self.collection = collection
-#         self.alpha_other = alpha_other
-#         # self.x = x
-#         # self.y = y
-#         # self.xys = collection.get_offsets()
-#         # self.Npts = len(self.xys)
-#         self.compareWindow = compareWindow
-#         self.c1Label = c1Label
-#         self.c2Label = c2Label
-
-#         # Ensure that we have separate colors for each object
-#         # self.fc = collection.get_facecolors()
-#         # if len(self.fc) == 0:
-#         #     raise ValueError('Collection must have a facecolor')
-#         # elif len(self.fc) == 1:
-#         #     self.fc = np.tile(self.fc, (self.Npts, 1))
-
-#         self.lasso = LassoSelector(ax, onselect=self.onselect)
-#         self.ind = []
-
-#     def onselect(self, verts):
-#         path = Path(verts)
-#         self.ind = np.nonzero(path.contains_points(self.xys))[0]
-#         self.fc[:, -1] = self.alpha_other
-#         self.fc[self.ind, -1] = 1
-#         # self.collection.set_facecolors(self.fc)
-#         self.canvas.draw_idle()
-#         for selected in self.xys[self.ind]:
-#             selectedArray.append(df.loc[(df[self.x] == selected[0]) & (df[self.y] == selected[1])]['Unnamed: 0'].values[0])
-#         # self.compareWindow = ClusterSelectPopup(self.c1Label, self.c2Label)
-#         # self.compareWindow.setGeometry(QRect(100, 100, 400, 200))
-#         # self.compareWindow.show()
-
-#     def disconnect(self):
-#         self.lasso.disconnect_events()
-#         self.fc[:, -1] = 1
-#         # self.collection.set_facecolors(self.fc)
-#         self.canvas.draw_idle()
-
-
-def createXlsx(adata):
-    grouplen = len(adata.obs['leiden'].value_counts())
+def createXlsx(adata, grouplen):
     df = pd.DataFrame()
     for group in range(grouplen):
         if df.empty:
@@ -75,3 +30,18 @@ def createXlsx(adata):
         else:
             df.append(sc.get.rank_genes_groups_df(adata, group=str(group), key='wilcoxon'))
     df.to_excel('Differential Gene Expression Information.xlsx', index=False)
+
+#ELEPHANT
+#Check which ones can have dendrogram
+#NonNAN values check
+def generateGraphs(adata,AutoClustering):
+    sc.pl.rank_genes_groups(adata, n_genes=25, sharey=False, key='wilcoxon', show=False, save='.png')
+    sc.pl.dendrogram(adata, 'leiden', show=False, save='.png')
+    sc.pl.rank_genes_groups_dotplot(adata, n_genes=5, key='wilcoxon', groupby='leiden', dendrogram = False, show=False, save='.png')
+    sc.pl.rank_genes_groups_violin(adata, n_genes=5, key='wilcoxon', show=False, save='.png')
+    sc.pl.rank_genes_groups_stacked_violin(adata, n_genes=5, key='wilcoxon', groupby='leiden', show=False, save='.png', dendrogram = False)
+    sc.pl.rank_genes_groups_matrixplot(adata, n_genes=5, key='wilcoxon', groupby='leiden', show=False, save='.png', dendrogram = False)
+    if AutoClustering:
+        sc.pl.rank_genes_groups_heatmap(adata, n_genes=5, key='wilcoxon', groupby='leiden', show_gene_labels = True, show=False, save='.png', dendrogram = False)
+        sc.pl.rank_genes_groups_tracksplot(adata, n_genes=5, key='wilcoxon', groupby='leiden', show=False, save='.png', dendrogram= False)
+        

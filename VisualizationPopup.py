@@ -1,63 +1,91 @@
 import cv2 as cv
 import matplotlib.pyplot as plt
 import scanpy as sc
-from matplotlib.backends.backend_qt5agg import \
-    FigureCanvasQTAgg as FigureCanvas
-from PyQt5.QtWidgets import QComboBox, QLabel, QVBoxLayout, QWidget
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
+from PyQt5.QtWidgets import QComboBox, QLabel, QVBoxLayout, QWidget, QFormLayout,QPushButton,QHBoxLayout
+
+import math
 
 
 class visualizationPopup(QWidget):
-    def __init__(self):
+    def __init__(self,grouplen,AutoClustering):
         QWidget.__init__(self)
+        self.grouplen=grouplen
         self.setWindowTitle('Differential Gene Expression Representation')
         self.showMaximized()
         self.plotComboBox = QComboBox()
-        self.plotComboBox.addItems(['Gene Ranking','Dot Plot', 'Violin', 'Stacked Violin', 'Matrix Plot', 'Heatmap', 'Tracksplot'])
+        if AutoClustering:
+            self.plotComboBox.addItems(['Gene Ranking','Dendrogram', 'Dot Plot', 'Violin', 'Stacked Violin', 'Matrix Plot', 'Heatmap', 'Tracksplot'])
+        else:
+            self.plotComboBox.addItems(['Gene Ranking','Dendrogram', 'Dot Plot', 'Violin', 'Stacked Violin', 'Matrix Plot'])
         self.plotLabel = QLabel("Plot Type:")
         self.plotLabel.setBuddy(self.plotComboBox)
+        
         self.plotComboBox.currentIndexChanged.connect(self.updateGraph)
 
+        #ELEPHANT Make rank grapg default
         self.figure = plt.figure()
         self.canvas = FigureCanvas(self.figure)
 
-        grid = QVBoxLayout()
-        grid.addWidget(self.plotLabel)
-        grid.addWidget(self.plotComboBox)
-        grid.addWidget(self.canvas)
+        self.toolbar = NavigationToolbar(self.canvas, self)
+        self.plotSelectionLayout = QFormLayout()
+        self.plotSelectionLayout.addRow(self.plotLabel,self.plotComboBox)
 
+        grid = QVBoxLayout()
+        grid.addLayout(self.plotSelectionLayout)
+        grid.addWidget(self.toolbar)
+        grid.addWidget(self.canvas,1)
         self.setLayout(grid)
         
 
     def updateGraph(self, *args):
 
-        # self.canvas.close()
         plot = self.plotComboBox.currentText()
-        # if plot == '':
-        #     sc.pl.rank_genes_groups(adata, n_genes=25, sharey=False, key='wilcoxon')
-        # el
         self.figure.clear() #clear current figure
         self.canvas.flush_events()
-        ax = self.figure.add_subplot(111) # create an axis
         if plot == 'Gene Ranking':
-            # sc.pl.rank_genes_groups(self.adata, n_genes=25, sharey=False, key='wilcoxon', show=False, save='.png')
-            ax.imshow('./figures/dotplot_.png')
+            ax = self.figure.add_subplot(111) # create an axis
+            img = cv.imread('./figures/rank_genes_groups_leiden.png')
+            ax.imshow(img)
+        elif plot == 'Dendrogram':
+            ax = self.figure.add_subplot(111) # create an axis
+            img = cv.imread('./figures/dendrogram.png')
+            ax.imshow(img)
         elif  plot == 'Dot Plot':
-            # sc.pl.rank_genes_groups_dotplot(self.adata, n_genes=5, key='wilcoxon', groupby='leiden', dendrogram = False, show=False, save='.png')
-            ax.imshow('./figures/dotplot_.png')
-        # elif plot == 'Violin':
-        #     print()
-        #     # ax = self.figure.add_subplot(121) # create an axis
-        #     # sc.pl.rank_genes_groups_violin(self.adata, groups='1', n_genes=5, key='wilcoxon', show=False, save='.png')
-        #     # ax1 = self.figure.add_subplot(122) # create an axis
-        #     # sc.pl.rank_genes_groups_violin(self.adata, groups='2', n_genes=5, key='wilcoxon', ax = ax1)
-        # elif plot == 'Stacked Violin':
-        #     sc.pl.rank_genes_groups_stacked_violin(self.adata, n_genes=5, key='wilcoxon', groupby='leiden', show=False, save='.png', dendrogram = False)
-        # elif plot == 'Matrix Plot':
-        #     sc.pl.rank_genes_groups_matrixplot(self.adata, n_genes=5, key='wilcoxon', groupby='leiden', show=False, save='.png', dendrogram = False)
-        # elif plot == 'Heatmap':
-        #     sc.pl.rank_genes_groups_heatmap(self.adata, n_genes=5, key='wilcoxon', groupby='leiden', show_gene_labels = True, show=False, save='.png', dendrogram = False)
-        # elif plot == 'Tracksplot':
-        #     # self.figure.clear() #clear current figure
-        #     # ax = sc.pl.tracksplot(adata, marker_genes_dict, groupby='clusters', dendrogram=True)
-        #     sc.pl.rank_genes_groups_tracksplot(self.adata, n_genes=5, key='wilcoxon', groupby='leiden', show=False, save='.png', dendrogram= False)
+            ax = self.figure.add_subplot(111) # create an axis
+            img = cv.imread('./figures/dotplot_.png')
+            ax.imshow(img)
+        #ELEPHANT figure out the plots
+        elif plot == 'Violin':
+            i=0
+            index=1
+            if(self.grouplen<=3):
+                column = self.grouplen
+                row=1
+            else:
+                column = 3
+                row = math.ceil(self.grouplen/3)
+            
+            for i in range (self.grouplen):
+                ax = self.figure.add_subplot(row,column,index)
+                index=index+1
+                img = cv.imread('./figures/rank_genes_groups_leiden_'+str(i)+'.png')
+                ax.imshow(img)
+        elif plot == 'Stacked Violin':
+            ax = self.figure.add_subplot(111) # create an axis
+            img = cv.imread('./figures/stacked_violin_.png')
+            ax.imshow(img)
+        elif plot == 'Matrix Plot':
+            ax = self.figure.add_subplot(111) # create an axis
+            img = cv.imread('./figures/matrixplot_.png')
+            ax.imshow(img)
+        elif plot == 'Heatmap':
+            ax = self.figure.add_subplot(111) # create an axis
+            img = cv.imread('./figures/heatmap.png')
+            ax.imshow(img)
+        elif plot == 'Tracksplot':
+            ax = self.figure.add_subplot(111) # create an axis
+            img = cv.imread('./figures/tracksplot.png')
+            ax.imshow(img)
         self.canvas.draw()
