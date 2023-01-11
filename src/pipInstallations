@@ -1,0 +1,5 @@
+pip install opencv-python
+pip install PyQt5
+pip install scanpy
+pip install leidenalg
+pip install openpyxl
