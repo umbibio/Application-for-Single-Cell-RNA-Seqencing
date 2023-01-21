@@ -1,10 +1,10 @@
-body 
+body
 {
     background-color: #ffffff;
     color: #233338;
     font-size:12px;
 }
-QWidget 
+QWidget
 {
     background-color: #ffffff;
     color: #233338;

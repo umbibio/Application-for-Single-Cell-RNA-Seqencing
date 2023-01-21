@@ -12,6 +12,7 @@ from PyQt5.QtWidgets import QComboBox, QLabel, QVBoxLayout, QWidget, QFormLayout
 n_genes=5
 plot=''
 basedir = os.path.dirname(__file__)
+sc.settings.figdir=basedir+'/figures/'
 
 class visualizationPopup(QWidget):
     def __init__(self,grouplen,AutoClustering,adata,parent):
@@ -68,7 +69,7 @@ class visualizationPopup(QWidget):
             self.parent.parent.parent.statusbar.showMessage("Generating Dendrogram...")
             sc.pl.dendrogram(self.adata, 'leiden', show=False, save='.png')
             ax = self.figure.add_subplot(111)
-            img = cv.imread(os.path.join(basedir, 'figures','dendrogram.png'))
+            img = cv.imread(os.path.join(basedir,'figures','dendrogram.png'))
             ax.imshow(img)
             self.canvasPop.draw()
         else:

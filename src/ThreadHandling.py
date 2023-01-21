@@ -1,6 +1,9 @@
+import os
 from PyQt5.QtGui import QMovie
 from PyQt5.QtCore import QObject,pyqtSignal,QRect,Qt
 from PyQt5.QtWidgets import QDialog, QLabel,QHBoxLayout
+
+basedir = os.path.dirname(__file__)
 
 class Signals(QObject):
     return_signal = pyqtSignal()
@@ -10,9 +13,9 @@ class displayMessagePopup(QDialog):
     def __init__(self,signal):
         QDialog.__init__(self)
         self.setWindowFlag(Qt.FramelessWindowHint)
-        # self.setStyleSheet('background-color:light white;')
+        self.setStyleSheet('background-color:white;')
         # self.setWindowOpacity(0.7)
-        self.setStyleSheet('background-color:light grey;')
+        # self.setStyleSheet('background-color:light grey;')
         self.message = QLabel(self)
         self.message.setText(signal)
         self.message.move(60, 25)
@@ -20,7 +23,7 @@ class displayMessagePopup(QDialog):
         self.message.setStyleSheet("border: None")
         self.MovieLabel = QLabel(self)
         self.MovieLabel.setGeometry(QRect(0, 0, 30, 30))
-        self.movie = QMovie("images/loader.gif")
+        self.movie = QMovie(basedir+"/images/loader.gif")
         self.MovieLabel.setMovie(self.movie)
         self.movie.start()
         self.MovieLabel.move(20, 20)

@@ -1,9 +1,9 @@
-..\session_info\__init__.py
-..\session_info\__pycache__\__init__.cpython-37.pyc
-..\session_info\__pycache__\_version.cpython-37.pyc
-..\session_info\__pycache__\main.cpython-37.pyc
-..\session_info\_version.py
-..\session_info\main.py
+../session_info/__init__.py
+../session_info/__pycache__/__init__.cpython-37.pyc
+../session_info/__pycache__/_version.cpython-37.pyc
+../session_info/__pycache__/main.cpython-37.pyc
+../session_info/_version.py
+../session_info/main.py
 PKG-INFO
 SOURCES.txt
 dependency_links.txt

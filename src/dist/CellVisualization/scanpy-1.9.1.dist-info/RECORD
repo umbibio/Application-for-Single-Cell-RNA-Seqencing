@@ -1,4 +1,4 @@
-../../Scripts/scanpy.exe,sha256=76A0HcjopLLifxoT4Ukr_LX0qhMsOD4G5yfiEVg7aBc,106379
+../../../bin/scanpy,sha256=pviBqzXm-UmZjoo1NzKMch-Dlm3qUmCYOXVTTMtEAuA,272
 scanpy-1.9.1.dist-info/INSTALLER,sha256=zuuue4knoyJ-UwPPXg8fezS7VCrXJQrAP7zeNuwvFQg,4
 scanpy-1.9.1.dist-info/LICENSE,sha256=BmIcow-YNLyYsHLnCJ2SD9Krfi0MBImTVS_jGDaxZCU,1539
 scanpy-1.9.1.dist-info/METADATA,sha256=A4RsrIXZcvjmL0dWWw3LrzY0oC36f3W7LMZmXYe2NXM,5460

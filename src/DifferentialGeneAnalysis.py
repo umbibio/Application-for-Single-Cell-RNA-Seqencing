@@ -33,6 +33,7 @@ adata = anndata.AnnData(
 grouplen = 0
 fig = None
 plottype = ''
+savefolderpath = ''
 
 class Window(QWidget):
 
@@ -225,7 +226,9 @@ class Window(QWidget):
         self.calcDiffGeneButton.show()
 
     def calcDiffGene(self, *args):
+        global savefolderpath
         self.calcDiffGeneButton.setEnabled(False)
+        savefolderpath  = QFileDialog.getExistingDirectory(self.parent,'Select folder to save files')
         thread = calcDiffGeneThread(self)
         thread.signal.progress_signal.connect(self.reportProgress)
         thread.signal.return_signal.connect(self.completePreprocess)
@@ -273,10 +276,8 @@ class calcDiffGeneThread(QRunnable):
         self.signal.progress_signal.emit('Calculating dendrogram...')
         sc.tl.dendrogram(adata, 'leiden')
         self.signal.progress_signal.emit('Creating xlsx file of differential gene expression data...')
-        savefolderpath  = QFileDialog.getExistingDirectory(self.parent,'Select folder to save files')+'/CellVisualization'
-        if not os.path.isdir(savefolderpath):
-            os.mkdir(os.path.normpath(savefolderpath))
         mwf.createXlsx(adata,grouplen,savefolderpath)
+        # mwf.createXlsx(adata, grouplen)
         self.signal.return_signal.emit()
         
 

@@ -1,8 +1,8 @@
-../../Scripts/fonttools.exe,sha256=yzux6wM6grZDp_YWsr3-r2JUMXxNwk-MgnB_nlOQvSo,106371
-../../Scripts/pyftmerge.exe,sha256=gMLE5a-nmFelYNAOvGWs4O_Ta-zEDXpjKwDadjrpGuw,106368
-../../Scripts/pyftsubset.exe,sha256=_IprJaiD2ghv5b5ixXN1tjPTfuCm-fDrNntwZXbHJHY,106369
-../../Scripts/ttx.exe,sha256=CJSpRWcEdEpEm0uhVUVECz78Dg69N1O7K_oSQ5t8230,106366
-../../share/man/man1/ttx.1,sha256=cLbm_pOOj1C76T2QXvDxzwDj9gk-GTd5RztvTMsouFw,5377
+../../../bin/fonttools,sha256=9GIh2TLlRUHtzdXQlaoMK_z9OcH_ZdSKsrtlGqqVajA,264
+../../../bin/pyftmerge,sha256=HVG7d22NnuI2RsD48U_0S5WicnRHrlAVYJz0LLw6GTE,261
+../../../bin/pyftsubset,sha256=zUbLH6u0JV9z3cN5amhZWr1Whn2NMX5YXJfmMi8FMuc,262
+../../../bin/ttx,sha256=pd3oCfSOS5Jifio7zdDS7Q9Lxf0l7vt0VrBK1C2TtQE,259
+../../../share/man/man1/ttx.1,sha256=cLbm_pOOj1C76T2QXvDxzwDj9gk-GTd5RztvTMsouFw,5377
 fontTools/__init__.py,sha256=znaJSq_4TRK_5tvjMeYa3LGqv65ytBVNEasW7FMAwpg,183
 fontTools/__main__.py,sha256=aq5EcFtSp-O7lKJVlIMkkJWdXNkqeEGD1GDF-AGm5os,844
 fontTools/__pycache__/__init__.cpython-37.pyc,,

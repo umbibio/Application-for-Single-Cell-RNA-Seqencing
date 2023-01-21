@@ -198,12 +198,11 @@ class MainWindow(QMainWindow):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
+    app.setStyle('Fusion')
     app.setStyleSheet("QLabel{font-size: 1pt;}")
-    f = QFile('style.qss')                                
-    f.open(QFile.ReadOnly | QFile.Text)
-    ts = QTextStream(f)
-    stylesheet = ts.readAll()    
-    app.setStyleSheet(stylesheet)
+    qss=os.path.join(basedir,"style.qss")
+    with open(qss, "r") as fh:
+        app.setStyleSheet(fh.read())
     if os.path.isfile(os.path.join(basedir,'PreprocessedData','adata.h5ad')):
         adata = sc.read(os.path.join(basedir,'PreprocessedData','adata.h5ad')) 
         adata.uns['log1p']["base"] = None
